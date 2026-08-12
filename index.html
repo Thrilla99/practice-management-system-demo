@@ -1,0 +1,1341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meridian &amp; Vos · Interactive Product Tour</title>
+</head>
+<body data-theme="dark">
+<script>document.body.dataset.theme="dark"</script>
+<style>
+  /* ============ theme tokens (mirrors the real app: light / dark / glass) ============ */
+  body{
+    --page:#F5F7FA; --card:#FFFFFF; --elevated:#FFFFFF;
+    --ink1:#1F2937; --ink2:#4B5563; --ink3:#6B7280;
+    --outline:#E5E7EB;
+    --accent:#2E75B6; --accent-strong:#1E3A5F; --btn:#1E3A5F; --btn-text:#fff; --btn-hover:#274870;
+    --rag-hi:#16A34A; --rag-mid:#D97706; --rag-lo:#DC2626; --ring-track:#E5E7EB;
+    --sel-ring:rgba(59,130,246,.7); --spark:#2E75B6; --spark-dot:#1E3A5F;
+    --mono:"Cascadia Code",Consolas,"SF Mono",Menlo,monospace;
+    --brandfont:Cinzel,Georgia,"Times New Roman",serif;
+    color-scheme:light;
+  }
+  body[data-theme='dark']{
+    --page:#0F1724; --card:#1E2A3D; --elevated:#263349;
+    --ink1:#E5E9F0; --ink2:#94A3B8; --ink3:rgba(255,255,255,.72);
+    --outline:#334155;
+    --accent:#60A5FA; --accent-strong:#7DA8D8; --btn:#2563eb; --btn-text:#fff; --btn-hover:#3b82f6;
+    --rag-hi:#4ADE80; --rag-mid:#FBBF24; --rag-lo:#F87171; --ring-track:#334155;
+    --sel-ring:rgba(0,212,255,.7); --spark:#60A5FA; --spark-dot:#8FC1E9;
+    color-scheme:dark;
+  }
+  body[data-theme='glass']{
+    --page:#050e1c; --card:rgba(255,255,255,.02); --elevated:rgba(20,32,52,.55);
+    --ink1:#E5E9F0; --ink2:#94A3B8; --ink3:rgba(255,255,255,.72);
+    --outline:rgba(255,255,255,.10);
+    --accent:#00D4FF; --accent-strong:#00D4FF; --btn:#00D4FF; --btn-text:#050e1c; --btn-hover:#00D4FF;
+    --rag-hi:#4ADE80; --rag-mid:#FBBF24; --rag-lo:#F87171; --ring-track:#334155;
+    --sel-ring:rgba(0,212,255,.7); --spark:#00D4FF; --spark-dot:#8FE9FF;
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--page);color:var(--ink1);
+    font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+    font-size:15.5px;line-height:1.6;transition:background .4s,color .3s}
+  button{font:inherit;cursor:pointer;color:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+  /* ============ glass starfield backdrop ============ */
+  .sky{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s;background:#050e1c;overflow:hidden}
+  body[data-theme='glass'] .sky{opacity:1}
+  .sky canvas{position:absolute;inset:0;width:100%;height:100%;animation:twinkle 4s ease-in-out infinite alternate}
+  .sky .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 100% 80% at 50% 50%, transparent 40%, rgba(0,0,0,.5) 100%)}
+  .sky .horizon{position:absolute;bottom:0;left:0;right:0;height:45vh;mix-blend-mode:screen;
+    background:radial-gradient(ellipse 80% 100% at 50% 100%, rgba(127,179,255,.45) 0%, rgba(127,179,255,.28) 30%, rgba(127,179,255,.12) 60%, transparent 100%)}
+  @keyframes twinkle{0%{opacity:.6}100%{opacity:1}}
+
+  /* ============ surfaces ============ */
+  .panel{background:var(--card);border:1px solid var(--outline);border-radius:14px;
+    box-shadow:0 1px 3px rgb(15 23 42/.08),0 4px 12px rgb(15 23 42/.04)}
+  body[data-theme='dark'] .panel{box-shadow:0 4px 20px rgba(0,0,0,.3)}
+  body[data-theme='glass'] .panel{
+    backdrop-filter:blur(10px) saturate(160%);-webkit-backdrop-filter:blur(10px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.04), inset 0 -1px 0 rgba(127,179,255,.14),
+      inset 1px 0 0 rgba(255,255,255,.06), inset -1px 0 0 rgba(255,255,255,.06),
+      inset 0 8px 16px -8px rgba(255,255,255,.05),
+      0 4px 24px rgba(0,0,0,.25), 0 1px 2px rgba(0,0,0,.4)}
+
+  /* ============ top nav (app-nav chrome tier) ============ */
+  .app-nav{position:sticky;top:0;z-index:50;background:var(--elevated);border-bottom:1px solid var(--outline)}
+  body[data-theme='light'] .app-nav{background:rgba(255,255,255,.9);backdrop-filter:blur(8px)}
+  body[data-theme='dark'] .app-nav{background:rgba(30,42,61,.92);backdrop-filter:blur(8px)}
+  body[data-theme='glass'] .app-nav{background:rgba(10,22,40,.45);
+    backdrop-filter:blur(24px) saturate(180%) brightness(.85);-webkit-backdrop-filter:blur(24px) saturate(180%) brightness(.85);
+    border-bottom:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  .nav-row{display:flex;align-items:center;gap:16px;padding:9px 0;flex-wrap:wrap}
+  .brand-lockup{display:flex;align-items:center;gap:10px;white-space:nowrap}
+  .brand-crest{width:34px;height:34px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-family:var(--brandfont);font-weight:700;font-size:13px;letter-spacing:.05em;
+    background:linear-gradient(150deg,#1E3A5F,#2E75B6);color:#fff}
+  body[data-theme='glass'] .brand-crest{background:linear-gradient(150deg,#0a2137,#00D4FF66);box-shadow:0 0 14px rgba(0,212,255,.35)}
+  .brand-text{display:flex;flex-direction:column;line-height:1.1}
+  .brand-name{font-family:var(--brandfont);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink1)}
+  body[data-theme='glass'] .brand-name{text-shadow:0 0 12px rgba(0,212,255,.25)}
+  .brand-sub{font-size:9.5px;letter-spacing:.05em;color:var(--ink3);text-transform:uppercase;margin-top:2px}
+  .topnav{display:flex;gap:12px;font-size:13px;color:var(--ink2)}
+  .topnav a{color:inherit;text-decoration:none;padding:4px 2px;border-bottom:2px solid transparent}
+  .topnav a:hover{color:var(--ink1);border-bottom-color:var(--accent)}
+  @media(max-width:1020px){.topnav{display:none}}
+  .nav-right{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  .seg{display:flex;background:rgba(0,0,0,.05);border:1px solid var(--outline);border-radius:10px;padding:3px;gap:2px}
+  body[data-theme='dark'] .seg,body[data-theme='glass'] .seg{background:rgba(255,255,255,.05)}
+  .seg button{border:1px solid transparent;background:transparent;border-radius:7px;padding:4px 11px;font-size:12.5px;color:var(--ink2);font-weight:600;line-height:1.3}
+  .seg button[aria-pressed='true']{color:var(--ink1);background:var(--card);border-color:var(--outline)}
+  body[data-theme='light'] .seg button[aria-pressed='true']{background:#fff;box-shadow:0 1px 3px rgb(15 23 42/.12)}
+  body[data-theme='glass'] .seg button[aria-pressed='true']{
+    background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.5);color:rgba(255,255,255,.98);text-shadow:0 0 8px rgba(0,212,255,.3)}
+  .seg .r{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);font-weight:500}
+  @media(max-width:700px){.seg .r{display:none}.seg button{padding:5px 9px}}
+
+  /* ============ hero ============ */
+  .hero{padding:72px 0 40px}
+  .herogrid{display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:center}
+  @media(max-width:880px){.herogrid{grid-template-columns:1fr;gap:30px}}
+  .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  .hero h1{font-size:clamp(32px,4.6vw,46px);font-weight:650;letter-spacing:-.02em;line-height:1.08;margin:0 0 18px;
+    color:var(--ink1);text-wrap:balance;max-width:18ch}
+  .hero .sub{font-size:16.5px;color:var(--ink2);max-width:56ch;margin:0 0 20px}
+  .fiction{display:flex;gap:10px;align-items:baseline;border-radius:10px;padding:10px 15px;font-size:13.5px;max-width:58ch;
+    background:rgba(217,119,6,.10);border:1px solid rgba(217,119,6,.35);color:var(--ink2)}
+  .fiction b{color:var(--ink1)}
+  .themehint{margin-top:14px;font-size:13px;color:var(--ink3)}
+  .themehint b{color:var(--accent)}
+  .hero-stats{display:flex;flex-wrap:wrap;gap:4px 36px;margin-top:26px}
+  .hstat .n{font-family:var(--mono);font-weight:600;font-size:24px;color:var(--ink1);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  body[data-theme='glass'] .hstat .n{color:#fff;text-shadow:0 0 10px rgba(0,212,255,.2)}
+  .hstat .l{font-size:12px;color:var(--ink3);margin-top:0}
+
+  /* sign-in card replica */
+  .sign-card{border-radius:16px;padding:26px 26px 22px;background:var(--card);border:1px solid var(--outline);
+    box-shadow:0 4px 20px rgba(15,23,42,.06);max-width:400px;justify-self:end;width:100%}
+  body[data-theme='dark'] .sign-card{box-shadow:0 4px 20px rgba(0,0,0,.3)}
+  body[data-theme='glass'] .sign-card{background:rgba(20,32,52,.55);
+    backdrop-filter:blur(20px) saturate(160%) brightness(.9);-webkit-backdrop-filter:blur(20px) saturate(160%) brightness(.9);
+    border-color:rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 12px 40px rgba(0,0,0,.3), 0 0 60px rgba(0,212,255,.15)}
+  @media(max-width:880px){.sign-card{justify-self:start}}
+  .sign-card .brand-name{font-size:19px}
+  .sign-card h2{font-size:21px;font-weight:600;letter-spacing:-.02em;margin:16px 0 2px}
+  .sign-card .st{font-size:13px;color:var(--ink2);margin:0 0 16px}
+  .persona-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--outline);
+    background:transparent;border-radius:12px;padding:10px 12px;margin:7px 0;transition:border-color .15s,background .15s}
+  .persona-row:hover{border-color:var(--accent)}
+  .persona-row[aria-pressed='true']{border-color:var(--accent);background:rgba(46,117,182,.08)}
+  body[data-theme='glass'] .persona-row[aria-pressed='true']{background:rgba(0,212,255,.10);box-shadow:0 0 16px rgba(0,212,255,.15)}
+  .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:12.5px;font-weight:700;color:#fff;flex:none;letter-spacing:.03em}
+  .avatar.staff{background:#2E75B6}.avatar.lead{background:#0d9488}.avatar.head{background:#7c3aed}
+  .persona-row .who{font-weight:650;font-size:14px;line-height:1.25}
+  .persona-row .what{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+  .persona-row .tick{margin-left:auto;font-size:13px;color:var(--accent);opacity:0;font-weight:700}
+  .persona-row[aria-pressed='true'] .tick{opacity:1}
+  .sign-note{font-size:11.5px;color:var(--ink3);margin-top:12px}
+
+  /* GlassButton replica */
+  .gbtn-wrap{position:relative;display:inline-block;width:100%}
+  .gbtn{position:relative;z-index:2;width:100%;border:none;border-radius:12px;font-weight:600;letter-spacing:-.01em;
+    padding:11px 18px;font-size:14px;background:var(--btn);color:var(--btn-text);
+    box-shadow:0 2px 0 rgba(0,0,0,.05), inset 0 1px 0 rgba(255,255,255,.15);transition:transform .1s,filter .15s,background .15s}
+  .gbtn:hover{background:var(--btn-hover)}
+  body[data-theme='glass'] .gbtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 0 0 1px rgba(0,212,255,.3)}
+  body[data-theme='glass'] .gbtn:hover{filter:brightness(1.1)}
+  .gbtn:active{transform:translateY(1px)}
+  .gbtn-glow{position:absolute;inset:2px;border-radius:12px;filter:blur(16px);opacity:.4;z-index:1;pointer-events:none;
+    background:var(--btn);transition:opacity .2s}
+  .gbtn-wrap:hover .gbtn-glow{opacity:.7}
+  body[data-theme='glass'] .gbtn-glow{opacity:.6}
+  body[data-theme='glass'] .gbtn-wrap:hover .gbtn-glow{opacity:.9}
+
+  /* ============ tour stops ============ */
+  .stop{padding:60px 0 4px;scroll-margin-top:64px}
+  .stopgrid{display:grid;grid-template-columns:minmax(280px,5fr) 7fr;gap:42px;align-items:start}
+  @media(max-width:880px){.stopgrid{grid-template-columns:1fr;gap:20px}}
+  .snum{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+  .explain h2{font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.15;margin:0 0 12px;color:var(--ink1);text-wrap:balance}
+  .explain .body{color:var(--ink2);font-size:14.5px;margin:0 0 12px;max-width:52ch}
+  .explain .body b{color:var(--ink1)}
+  .lens{border-top:1px solid var(--outline);padding-top:12px;margin-top:14px;font-size:13.5px;color:var(--ink2);max-width:52ch}
+  .lens .ll{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:4px}
+  .try{display:inline-flex;align-items:center;gap:8px;margin-top:14px;border-radius:99px;padding:6px 14px 6px 11px;
+    font-size:12.5px;font-weight:600;background:var(--btn);color:var(--btn-text)}
+  body[data-theme='glass'] .try{box-shadow:0 0 18px rgba(0,212,255,.35)}
+  .try .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+
+  /* app frame */
+  .app-frame{position:relative;overflow:hidden}
+  .chrome{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:12.5px;color:var(--ink2);
+    border-bottom:1px solid var(--outline)}
+  .chrome .mini-crest{width:22px;height:22px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-family:var(--brandfont);font-size:9px;font-weight:700;background:linear-gradient(150deg,#1E3A5F,#2E75B6);color:#fff}
+  body[data-theme='glass'] .chrome .mini-crest{box-shadow:0 0 10px rgba(0,212,255,.3)}
+  .chrome .crumb{font-weight:600;color:var(--ink1)}
+  .chrome .me{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink3)}
+  .chrome .me .mini{width:22px;height:22px;border-radius:50%;background:var(--accent-strong);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-size:9px;font-weight:700}
+  body[data-theme='glass'] .chrome .me .mini{background:#0a2137;box-shadow:0 0 0 1px rgba(0,212,255,.5)}
+  .app-body{padding:16px}
+  .caption{font-size:12px;color:var(--ink3);padding:10px 16px;border-top:1px solid var(--outline)}
+
+  /* veil */
+  .veil{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:22px;text-align:center;
+    background:rgba(245,247,250,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  body[data-theme='dark'] .veil{background:rgba(15,23,36,.55)}
+  body[data-theme='glass'] .veil{background:rgba(5,14,28,.55)}
+  .veil .box{border-radius:12px;padding:20px 24px;max-width:330px;background:var(--elevated);border:1px solid var(--outline);
+    box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  body[data-theme='glass'] .veil .box{background:rgba(10,22,40,.88);
+    backdrop-filter:blur(80px) saturate(200%);-webkit-backdrop-filter:blur(80px) saturate(200%);
+    border-color:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 24px 60px rgba(0,0,0,.5)}
+  .veil .lock{font-size:19px}
+  .veil p{font-size:13.5px;color:var(--ink2);margin:8px 0 14px}
+  .veil .gbtn-wrap{width:auto}
+  .veil .gbtn{width:auto;padding:9px 16px;font-size:13.5px}
+  .veil[hidden]{display:none}
+
+  /* ============ week planner (cal-day tiles) ============ */
+  .week{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  @media(max-width:640px){.week{grid-template-columns:repeat(2,1fr)}}
+  .cal-day{border:2px solid rgba(0,0,0,.12);border-radius:14px;padding:8px 8px 10px;min-height:158px;
+    display:flex;flex-direction:column;gap:6px;background:var(--page);cursor:pointer;transition:box-shadow .15s}
+  body[data-theme='dark'] .cal-day{border-color:rgba(255,255,255,.10);background:rgba(15,23,36,.5)}
+  body[data-theme='glass'] .cal-day{border-color:rgba(255,255,255,.12);background:rgba(10,22,40,.45)}
+  .cal-day:hover{box-shadow:inset 0 0 0 2px var(--sel-ring)}
+  .cal-day.sel{box-shadow:inset 0 0 0 1px var(--sel-ring), 0 0 24px rgba(0,212,255,.14)}
+  body[data-theme='light'] .cal-day.sel{background:rgba(46,117,182,.06);box-shadow:inset 0 0 0 2px var(--sel-ring)}
+  body[data-theme='glass'] .cal-day.sel{background:rgba(0,212,255,.08)}
+  body[data-theme='dark'] .cal-day.sel{background:rgba(0,212,255,.06)}
+  .cal-day .dh{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--ink2)}
+  .cal-day .dh b{color:var(--ink1);font-size:12.5px}
+  .cal-day .dh .cap{font-family:var(--mono);font-size:10.5px;color:var(--ink3)}
+  .chipx{position:relative;border-radius:6px;padding:4px 7px 4px 9px;font-size:11.5px;line-height:1.3;
+    border:1px solid transparent;border-left:4px solid var(--cc);background:var(--cc-bg);color:var(--ink1)}
+  body[data-theme='dark'] .chipx,body[data-theme='glass'] .chipx{background:var(--cc-bg-d);border-color:var(--cc-bd-d);border-left:4px solid var(--cc);color:var(--cc-tx-d)}
+  .chipx .c{font-weight:650;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chipx .w{font-size:10.5px;opacity:.75}
+  .chipx .h{font-family:var(--mono);font-size:10.5px;float:right;font-variant-numeric:tabular-nums}
+  .capbar{margin-top:auto;height:5px;border-radius:99px;background:rgba(127,139,154,.25);overflow:hidden}
+  .capbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+  body[data-theme='glass'] .capbar i{box-shadow:0 0 8px rgba(0,212,255,.6)}
+  .capbar.over i{background:var(--rag-mid);box-shadow:none}
+  .capnote{font-size:10px;font-family:var(--mono);color:var(--ink3)}
+  .capnote.over{color:var(--rag-mid);font-weight:600}
+  .backlog{margin-top:14px;border-top:1px dashed var(--outline);padding-top:12px}
+  .bt{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;font-weight:600}
+  .bitem{display:flex;align-items:center;gap:10px;border:1px solid var(--outline);border-radius:9px;padding:7px 10px;margin:6px 0;font-size:13px;background:transparent}
+  .bitem .h{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+  .bitem button{margin-left:auto;background:transparent;border:1px solid var(--outline);border-radius:7px;
+    padding:4px 11px;font-size:12px;font-weight:600;color:var(--accent)}
+  .bitem button:hover{border-color:var(--accent)}
+  .bitem.done{opacity:.45}
+  .bitem.done button{pointer-events:none;color:var(--ink3)}
+
+  /* ============ timesheet ============ */
+  .tform{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.tform{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+  .field select{border:1px solid var(--outline);border-radius:10px;padding:9px 36px 9px 11px;font:inherit;font-size:13.5px;
+    background:var(--card);color:var(--ink1);appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink3) 50%),linear-gradient(135deg,var(--ink3) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+  body[data-theme='glass'] .field select{background-color:rgba(10,22,40,.5)}
+  .field select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(0,212,255,.15)}
+  body[data-theme='light'] .field select:focus{box-shadow:0 0 0 3px rgba(46,117,182,.15)}
+  .hourrow{display:flex;align-items:center;gap:8px}
+  .hourrow .hval{font-family:var(--mono);font-size:19px;min-width:64px;text-align:center;border:1px solid var(--outline);
+    border-radius:10px;padding:6px 4px;font-variant-numeric:tabular-nums;background:var(--card)}
+  body[data-theme='glass'] .hourrow .hval{background:rgba(10,22,40,.5)}
+  .hourrow button{width:34px;height:34px;border:1px solid var(--outline);border-radius:10px;background:transparent;font-size:16px;font-weight:700;color:var(--accent)}
+  .hourrow button:hover{border-color:var(--accent)}
+  .switch{display:flex;align-items:center;gap:9px;padding:4px 0 0;background:none;border:0}
+  .switch .track{width:40px;height:22px;border-radius:99px;background:rgba(127,139,154,.35);position:relative;transition:background .15s;flex:none}
+  .switch .track i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0/.3);transition:left .15s}
+  .switch[aria-pressed='true'] .track{background:var(--rag-hi)}
+  .switch[aria-pressed='true'] .track i{left:20px}
+  .logwrap{grid-column:1/-1}
+  .entries{margin-top:16px;border-top:1px dashed var(--outline);padding-top:12px}
+  .erow{display:flex;align-items:center;gap:9px;padding:8px 2px;border-bottom:1px solid var(--outline);font-size:13px;flex-wrap:wrap}
+  .erow:last-child{border-bottom:none}
+  .erow .cl{font-weight:650}
+  .erow .wt{color:var(--ink3);font-size:12px}
+  .erow .hh{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pill{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:2px 9px;border:1px solid;white-space:nowrap}
+  .pill.pending{color:var(--rag-mid);border-color:var(--rag-mid);background:rgba(217,119,6,.10)}
+  .pill.approved{color:var(--rag-hi);border-color:var(--rag-hi);background:rgba(22,163,74,.10)}
+  .pill.queried{color:var(--rag-lo);border-color:var(--rag-lo);background:rgba(220,38,38,.10)}
+  .pill.nb{color:var(--ink3);border-color:var(--outline);background:transparent}
+  .resub{background:transparent;border:1px solid var(--outline);border-radius:7px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--accent)}
+  .resub:hover{border-color:var(--accent)}
+
+  /* ============ queue ============ */
+  .qrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--outline);font-size:13px;flex-wrap:wrap;position:relative}
+  .qrow:last-child{border-bottom:none}
+  .qrow .meta .cl{font-weight:650}
+  .qrow .meta .sub{color:var(--ink3);font-size:12px}
+  .qacts{margin-left:auto;display:flex;gap:7px}
+  .qacts button{border:1px solid var(--outline);border-radius:8px;padding:5px 13px;font-size:12px;font-weight:650;background:transparent}
+  .qacts .ok{color:var(--rag-hi)} .qacts .ok:hover{border-color:var(--rag-hi);background:rgba(22,163,74,.1)}
+  .qacts .no{color:var(--rag-lo)} .qacts .no:hover{border-color:var(--rag-lo);background:rgba(220,38,38,.1)}
+  .stamp{position:absolute;right:100px;top:50%;transform:translateY(-50%) rotate(-8deg);border:2px solid var(--rag-hi);
+    color:var(--rag-hi);font-family:var(--brandfont);font-size:12px;letter-spacing:.2em;padding:2px 10px;border-radius:4px;opacity:0;pointer-events:none}
+  body[data-theme='glass'] .stamp{text-shadow:0 0 10px rgba(74,222,128,.5)}
+  .stamp.show{animation:stampin .45s forwards}
+  @keyframes stampin{0%{opacity:0;transform:translateY(-50%) rotate(-8deg) scale(1.8)}60%{opacity:1;transform:translateY(-50%) rotate(-8deg) scale(.95)}100%{opacity:1;transform:translateY(-50%) rotate(-8deg) scale(1)}}
+  .qempty{padding:22px;text-align:center;color:var(--ink3);font-size:13.5px}
+  .qreason{width:100%;display:flex;gap:8px;align-items:center;border-radius:9px;padding:8px 12px;font-size:12.5px;margin-top:6px;
+    background:rgba(220,38,38,.08);border:1px solid var(--rag-lo)}
+  .qreason select{flex:1;border:1px solid var(--outline);border-radius:7px;padding:5px 8px;font:inherit;font-size:12.5px;background:var(--card);color:var(--ink1)}
+  .qreason button{background:var(--rag-lo);border:0;color:#fff;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:650}
+  .qreason.amber{background:rgba(217,119,6,.08);border-color:var(--rag-mid)}
+  .qreason.amber button{background:var(--rag-mid);color:#1F2937}
+  .qacts .wait{color:var(--rag-mid)} .qacts .wait:hover{border-color:var(--rag-mid);background:rgba(217,119,6,.1)}
+
+  /* ============ KPI dashboard ============ */
+  .kwrap{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:stretch}
+  @media(max-width:720px){.kwrap{grid-template-columns:1fr}}
+  .gaugebox{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--outline);
+    border-radius:12px;padding:16px 22px;background:transparent}
+  .gauge-val{font-family:var(--mono);font-weight:600;font-size:27px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:-6px}
+  .gauge-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:500;margin-top:3px}
+  .gauge-sub{font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums;margin-top:2px}
+  body[data-theme='glass'] .gauge-fill{filter:drop-shadow(0 0 6px currentColor)}
+  .kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .kpi{border:1px solid var(--outline);border-radius:12px;padding:12px 13px;position:relative;background:transparent}
+  .kpi .kl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600;display:flex;align-items:center;gap:5px}
+  .kpi .kn{font-family:var(--mono);font-weight:600;font-size:24px;color:var(--ink1);margin-top:6px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+  .kpi .ks{font-size:11.5px;color:var(--ink2);margin-top:3px}
+  .kpi .ks.good{color:var(--rag-hi)} .kpi .ks.warn{color:var(--rag-mid)}
+  .tip{width:15px;height:15px;border-radius:50%;border:1px solid var(--ink3);color:var(--ink3);display:inline-flex;
+    align-items:center;justify-content:center;font-size:9px;cursor:help;position:relative;flex:none;background:transparent;padding:0}
+  .tip:hover::after,.tip:focus-visible::after{content:attr(data-tip);position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+    background:#0a1626;color:#E5E9F0;font-size:11.5px;line-height:1.45;padding:8px 11px;border-radius:8px;width:200px;z-index:30;
+    text-transform:none;letter-spacing:0;font-weight:400;text-align:left;border:1px solid rgba(255,255,255,.15)}
+  .pace{margin-top:12px;border:1px solid var(--outline);border-radius:12px;padding:10px 14px;display:flex;align-items:center;
+    gap:12px;font-size:12.5px;color:var(--ink2);flex-wrap:wrap;background:transparent}
+  .pace .bar{flex:1;min-width:120px;height:7px;background:rgba(127,139,154,.25);border-radius:99px;overflow:hidden}
+  .pace .bar i{display:block;height:100%;width:30.4%;background:var(--accent);border-radius:99px}
+  body[data-theme='glass'] .pace .bar i{box-shadow:0 0 8px rgba(0,212,255,.6)}
+  .pace b{color:var(--ink1);font-variant-numeric:tabular-nums}
+
+  /* ============ league ============ */
+  .tblwrap{overflow-x:auto;border:1px solid var(--outline);border-radius:12px;background:transparent}
+  table.league{border-collapse:collapse;width:100%;font-size:13px;min-width:580px}
+  .league th{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:9px 12px;
+    border-bottom:1px solid var(--outline);white-space:nowrap;font-weight:650}
+  .league td{padding:8px 12px;border-bottom:1px solid var(--outline);vertical-align:middle}
+  .league tr:last-child td{border-bottom:none}
+  .league td.num{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .league .cl{font-weight:650}
+  .league tbody tr:hover td{background:rgba(46,117,182,.05)}
+  body[data-theme='glass'] .league tbody tr:hover td{background:rgba(0,212,255,.05)}
+  .flag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;
+    padding:1px 7px;margin-left:8px;white-space:nowrap;border:1px dashed var(--rag-mid);color:var(--rag-mid);background:rgba(217,119,6,.08)}
+  .flag.nb{border-color:var(--rag-lo);color:var(--rag-lo);background:rgba(220,38,38,.08)}
+
+  /* ============ audit ============ */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .filters button{border:1px solid var(--outline);background:transparent;border-radius:99px;padding:4px 13px;font-size:12px;color:var(--ink2);font-weight:600}
+  .filters button[aria-pressed='true']{background:rgba(46,117,182,.12);border-color:var(--accent);color:var(--ink1)}
+  body[data-theme='glass'] .filters button[aria-pressed='true']{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.5);
+    color:rgba(255,255,255,.98);text-shadow:0 0 8px rgba(0,212,255,.3)}
+  .audit{background:#0a1422;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 0;max-height:270px;overflow-y:auto;font-family:var(--mono)}
+  .arow{display:flex;gap:12px;padding:5px 14px;font-size:11.5px;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.05)}
+  .arow:last-child{border-bottom:none}
+  .arow .t{color:#64748B;flex:none;font-variant-numeric:tabular-nums}
+  .arow .k{color:#00D4FF;flex:none;min-width:158px;opacity:.9}
+  .arow .m{color:#CBD5E1;overflow-wrap:anywhere}
+  .arow.fresh{animation:freshrow 1.2s}
+  @keyframes freshrow{0%{background:rgba(0,212,255,.16)}100%{background:transparent}}
+  @media(max-width:560px){.arow{flex-wrap:wrap;gap:4px 12px}.arow .k{min-width:0}}
+
+  /* ============ arcade ============ */
+  .arcade{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+  @media(max-width:640px){.arcade{grid-template-columns:1fr}}
+  .snakebox{background:#0a1422;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;display:inline-block}
+  body[data-theme='glass'] .snakebox{box-shadow:0 0 30px rgba(0,212,255,.12)}
+  canvas#snake{display:block;background:#050e1c;border-radius:8px;touch-action:none}
+  .snakehud{display:flex;justify-content:space-between;align-items:center;color:#CBD5E1;font-family:var(--mono);font-size:11.5px;padding:8px 2px 0}
+  .snakehud b{color:#00D4FF;font-variant-numeric:tabular-nums}
+  .dpad{display:grid;grid-template-columns:repeat(3,42px);gap:5px;justify-content:center;margin-top:10px}
+  .dpad button{height:38px;border-radius:9px;border:1px solid #33465C;background:#12203245;background:#122032;color:#CBD5E1;font-size:15px}
+  .dpad button:active{background:#00D4FF;color:#050e1c}
+  .dpad .blank{visibility:hidden}
+  .startwrap{margin-top:10px}
+  .lboard{border:1px solid var(--outline);border-radius:12px;padding:14px 16px;background:transparent}
+  .lrow{display:flex;align-items:center;gap:10px;padding:6px 2px;font-size:13px;border-bottom:1px solid var(--outline)}
+  .lrow:last-child{border-bottom:none}
+  .lrow .rank{font-family:var(--mono);color:var(--ink3);width:20px;flex:none;font-size:11.5px}
+  .lrow .score{margin-left:auto;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+  .lrow.you{border-radius:8px;padding:6px 8px;font-weight:650;background:rgba(46,117,182,.10)}
+  body[data-theme='glass'] .lrow.you{background:rgba(0,212,255,.10);box-shadow:0 0 14px rgba(0,212,255,.12)}
+
+  /* ============ build + footer ============ */
+  .buildsec{margin-top:70px;padding:50px 0 46px;border-top:1px solid var(--outline)}
+  .buildsec h2{font-size:28px;font-weight:650;letter-spacing:-.02em;margin:0 0 8px}
+  .buildsec .lede{color:var(--ink2);max-width:62ch;margin:0 0 24px;font-size:15px}
+  .techgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+  .tcard{padding:14px 16px}
+  .tcard .tt{font-weight:650;font-size:14px;color:var(--ink1)}
+  .tcard .td{font-size:12.5px;color:var(--ink2);margin-top:4px;line-height:1.5}
+  .factline{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:24px;font-family:var(--mono);font-size:12px;color:var(--ink3)}
+  .factline b{color:var(--ink1);font-weight:600}
+  footer{padding:26px 0 60px;color:var(--ink3);font-size:12.5px}
+  footer .byline{color:var(--ink2);font-size:13.5px;margin-bottom:8px}
+  footer .byline b{color:var(--ink1)}
+  footer a{color:var(--accent)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+    .sky canvas{animation:none!important;opacity:1}
+  }
+</style>
+
+<div class="sky" aria-hidden="true"><canvas id="stars"></canvas><div class="vignette"></div><div class="horizon"></div></div>
+
+<header class="app-nav">
+  <div class="wrap nav-row">
+    <span class="brand-lockup"><span class="brand-crest">MV</span>
+      <span class="brand-text"><span class="brand-name">Meridian &amp; Vos</span><span class="brand-sub">Practice management · demo</span></span></span>
+    <nav class="topnav" aria-label="Tour stops">
+      <a href="#stop1">Plan</a><a href="#stop2">Log</a><a href="#stop3">Approve</a>
+      <a href="#stop4">Dashboard</a><a href="#stop5">Budgets</a><a href="#stop-sars">Letters</a><a href="#stop6">Audit</a><a href="#stop7">Arcade</a>
+    </nav>
+    <div class="nav-right">
+      <div class="seg" role="group" aria-label="Theme" id="themeseg">
+        <button data-t="light" aria-pressed="false">Light</button>
+        <button data-t="dark" aria-pressed="true">Dark</button>
+        <button data-t="glass" aria-pressed="false">Glass</button>
+      </div>
+      <div class="seg" role="group" aria-label="View the demo as a role" id="roleseg">
+        <button data-role="staff" aria-pressed="true">Thandi<span class="r">Staff</span></button>
+        <button data-role="lead" aria-pressed="false">Pieter<span class="r">Team lead</span></button>
+        <button data-role="head" aria-pressed="false">Priya<span class="r">Head</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap herogrid">
+    <div>
+      <p class="kicker">Portfolio demo · Practice-management system</p>
+      <h1>Where the firm's hours actually go</h1>
+      <p class="sub">A working replica of the practice-management system I built for a ~20-person accounting
+        firm. It plans, logs, approves and analyses the hours behind roughly 890 client engagements, and
+        these days it triages the tax authority's letters as well. Everything on this page works, but none
+        of it is real.</p>
+      <p class="fiction"><b>All fictional.</b>&nbsp;"Meridian &amp; Vos", its staff, clients and every number here are
+        made up for this demo. The production system and its data are private.</p>
+      <p class="themehint">You're looking at the app's <b>dark theme</b>. There are three;
+        try <b>Glass</b> up top if you want the starfield.</p>
+      <div class="hero-stats" aria-label="Scale of the real system">
+        <div class="hstat"><div class="n">≈890</div><div class="l">client engagements</div></div>
+        <div class="hstat"><div class="n">5</div><div class="l">roles · 3 themes</div></div>
+        <div class="hstat"><div class="n">111</div><div class="l">audited event types</div></div>
+        <div class="hstat"><div class="n">EN·AF</div><div class="l">fully bilingual</div></div>
+      </div>
+    </div>
+    <div class="sign-card">
+      <span class="brand-lockup"><span class="brand-crest">MV</span>
+        <span class="brand-text"><span class="brand-name">Meridian &amp; Vos</span><span class="brand-sub">Practice management</span></span></span>
+      <h2>Choose your chair</h2>
+      <p class="st">Most of the product depends on who is looking. Pick a person and every section of this tour re-frames itself. Some sections are locked to the chair that owns them.</p>
+      <button class="persona-row" data-role="staff" aria-pressed="true">
+        <span class="avatar staff">TM</span>
+        <span><span class="who">Thandi Mokoena</span><br><span class="what">Accountant · Staff</span></span>
+        <span class="tick">✓</span></button>
+      <button class="persona-row" data-role="lead" aria-pressed="false">
+        <span class="avatar lead">PV</span>
+        <span><span class="who">Pieter van Rooyen</span><br><span class="what">Team lead</span></span>
+        <span class="tick">✓</span></button>
+      <button class="persona-row" data-role="head" aria-pressed="false">
+        <span class="avatar head">PN</span>
+        <span><span class="who">Priya Naidoo</span><br><span class="what">Managing partner · Head</span></span>
+        <span class="tick">✓</span></button>
+      <div style="margin-top:14px" class="gbtn-wrap"><button class="gbtn" id="startTour">Start the tour ↓</button><span class="gbtn-glow"></span></div>
+      <p class="sign-note">No passwords in the demo. In production this is the sign-in screen, backed by role-gated row-level security.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 1 - PLAN -->
+<section class="stop" id="stop1">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 1 / 8 · Calendar</p>
+      <h2>You plan the week before you work it</h2>
+      <p class="body">Client work gets assigned onto a week that knows its own capacity. The firm's real rules
+        are in here: <b>8.5 hours</b> Monday to Thursday, <b>5.5 hours</b> on a Friday, public holidays
+        excluded. "Full" means full, and you see over-assignment before it happens, not after. Chips carry
+        each staff member's colour, same as the production calendar.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="1"></span></p>
+      <span class="try"><span class="dot"></span>Pick a day, then assign backlog work onto it</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">Calendar · Week 28 · 6 to 10 July</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <div class="week" id="week"></div>
+          <div class="backlog">
+            <div class="bt">Unassigned backlog · Group A</div>
+            <div id="backlog"></div>
+          </div>
+        </div>
+        <div class="caption">Capacity bars fill as work lands; amber means the day is over-assigned. In production, assignment is a lead action with drag-and-drop, swap workflows, and a bulk-month fan-out that spreads a client's hours across the month's working days without ever padding slivers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 2 - LOG -->
+<section class="stop" id="stop2">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 2 / 8 · Timesheet</p>
+      <h2>Hours go in as quarters, against real work</h2>
+      <p class="body">Staff log decimal time against a client and a work type: VAT201, annual financials,
+        payroll runs. Every entry carries a <b>billable flag</b>, and that flag is a human decision, not an
+        automatic one. New entries land in a queue rather than a ledger. Nothing counts until someone senior
+        says it does.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="2"></span></p>
+      <span class="try"><span class="dot"></span>Log an entry, then watch it show up at Stop 3</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">My timesheet · Wednesday 8 July</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <form class="tform" id="tform">
+            <div class="field"><label for="f-client">Client</label>
+              <select id="f-client">
+                <option>Karoo Freight (Pty) Ltd</option><option>Bright &amp; Sons Hardware</option>
+                <option>Umhlanga Dental Studio</option><option>Two Oceans Catering CC</option>
+                <option>Silverleaf Estates</option><option>Mzansi Media House</option>
+                <option>Cape Wheat Co-op</option><option>Delta Fabrication (Pty) Ltd</option>
+              </select></div>
+            <div class="field"><label for="f-work">Work type</label>
+              <select id="f-work">
+                <option>VAT201</option><option>Annual financial statements</option>
+                <option>Payroll / EMP201</option><option>Provisional tax</option>
+                <option>Bookkeeping</option><option>Audit preparation</option><option>CIPC annual return</option>
+              </select></div>
+            <div class="field"><label id="hours-label">Hours</label>
+              <div class="hourrow" role="group" aria-labelledby="hours-label">
+                <button type="button" id="h-minus" aria-label="Minus a quarter hour">−</button>
+                <span class="hval" id="h-val">1.50</span>
+                <button type="button" id="h-plus" aria-label="Plus a quarter hour">+</button>
+                <span style="font-size:11.5px;color:var(--ink3)">0.25 steps</span>
+              </div></div>
+            <div class="field"><label>Billable</label>
+              <button type="button" class="switch" id="f-billable" aria-pressed="true">
+                <span class="track"><i></i></span><span id="billable-word">Billable</span></button></div>
+            <div class="logwrap gbtn-wrap"><button type="submit" class="gbtn" id="logbtn">Log entry → pending approval</button><span class="gbtn-glow"></span></div>
+          </form>
+          <div class="entries">
+            <div class="bt">This week · Thandi's entries</div>
+            <div id="mylist"></div>
+          </div>
+        </div>
+        <div class="caption">Queried entries come back to the person who logged them, with the reason attached: fix, resubmit, and the cycle continues on the record.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 3 - APPROVE -->
+<section class="stop" id="stop3">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 3 / 8 · Approvals</p>
+      <h2>Nothing counts until a lead has looked at it</h2>
+      <p class="body">Every entry passes through a team lead. <b>Approve</b> confirms it into the firm's
+        numbers; <b>query</b> bounces it back with the reason attached. This loop is what makes the dashboards
+        worth trusting, and every decision in it goes on the record (see Stop 7).</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="3"></span></p>
+      <span class="try"><span class="dot"></span>Approve one entry, query another, then switch back to Thandi and look at Stop 2</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">Approvals · Group A queue</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body"><div id="queue"></div></div>
+        <div class="caption">Approving flips status and updates the firm KPIs at Stop 4 in real time. A query requires a reason; "because" is not a category.</div>
+        <div class="veil" id="veil-queue" hidden>
+          <div class="box"><div class="lock">🔒</div>
+            <p>The approval queue belongs to the team lead's chair. Thandi can't approve her own hours, which is the whole point.</p>
+            <span class="gbtn-wrap"><button class="gbtn" data-role="lead">Switch to Pieter (team lead)</button><span class="gbtn-glow"></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 4 - DASHBOARD -->
+<section class="stop" id="stop4">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 4 / 8 · Firm dashboard</p>
+      <h2>Five numbers run the Monday meeting</h2>
+      <p class="body">These cards, plus a live gauge for the one the boss quotes most. Each metric has
+        <b>exactly one definition</b>, spelled out on the card itself, because the first time two screens
+        disagree, people stop trusting all of them. The pace strip keeps early-month numbers honest:
+        day 7 of 23 should not look like failure.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="4"></span></p>
+      <span class="try"><span class="dot"></span>Hover the ⓘ on any card, and note "Pending approvals" reacting to what you did at Stop 3</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">Firm dashboard · July 2026</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <div class="kwrap">
+            <div class="gaugebox">
+              <svg width="160" height="88" viewBox="0 0 100 55" aria-hidden="true">
+                <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--ring-track)" stroke-width="5.6" stroke-linecap="round"/>
+                <path id="gauge-fill" class="gauge-fill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--rag-mid)" stroke-width="5.6" stroke-linecap="round"
+                  stroke-dasharray="125.66" stroke-dashoffset="27.2" style="transition:stroke-dashoffset .6s, stroke .3s; color:var(--rag-mid)"/>
+              </svg>
+              <span class="gauge-val" id="gauge-val" style="color:var(--rag-mid)">78.4%</span>
+              <span class="gauge-label">Billable ratio</span>
+              <span class="gauge-sub">target ≥ 75% · this month</span>
+            </div>
+            <div>
+              <div class="kgrid">
+                <div class="kpi"><span class="kl">Hours logged <button class="tip" data-tip="All confirmed hours logged by fee earners this calendar month, in decimal time." aria-label="Definition">i</button></span>
+                  <div class="kn" id="k-hours">612.75</div><div class="ks good">on pace</div></div>
+                <div class="kpi"><span class="kl">Pending approvals <button class="tip" data-tip="Entries waiting in a team lead's queue, plus queried entries awaiting resubmission." aria-label="Definition">i</button></span>
+                  <div class="kn" id="k-pending">5</div><div class="ks warn" id="k-pending-sub">oldest: 3 days</div></div>
+                <div class="kpi"><span class="kl">Unassigned capacity <button class="tip" data-tip="Available hours this week (8.5h Mon to Thu, 5.5h Fri, holiday-aware) not yet covered by assignments." aria-label="Definition">i</button></span>
+                  <div class="kn">41.5h</div><div class="ks">across 6 staff</div></div>
+                <div class="kpi"><span class="kl">Unaccounted hours <button class="tip" data-tip="Elapsed working capacity minus everything logged. Time nobody can explain: the firm's quietest leak." aria-label="Definition">i</button></span>
+                  <div class="kn">96.25</div><div class="ks warn">≈ 2.9% of capacity</div></div>
+              </div>
+              <div class="pace"><span>Month pace</span><span class="bar"><i></i></span>
+                <span>working day <b>7</b> of <b>23</b> · RAG thresholds scale with days elapsed</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">In production these sit above per-group and per-staff drill-downs, a leaderboard, and an Excel export with eight analysis sheets.</div>
+        <div class="veil" id="veil-dash" hidden>
+          <div class="box"><div class="lock">🔒</div>
+            <p>Numbers this wide are for the corner office. Firm-level KPIs and budget variance are role-gated to the head.</p>
+            <span class="gbtn-wrap"><button class="gbtn" data-role="head">Switch to Priya (head)</button><span class="gbtn-glow"></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 5 - BUDGETS -->
+<section class="stop" id="stop5">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 5 / 8 · Budget analysis</p>
+      <h2>Budget vs actual, per client, and the flags that make money</h2>
+      <p class="body">Every client carries an hours budget imported from the firm's fee schedule (via an
+        AI-assisted import wizard, human-confirmed). The variance engine compares pace-adjusted actuals
+        against it and raises two flags worth real money. <b>Fee-adjustment candidates</b>: consistently
+        over budget, so the fee is probably wrong. <b>Unbudgeted work</b>: hours landing on a client with
+        no budget at all, which is work the firm may be doing for free. Clients also bill on their own
+        cycles (monthly, quarterly, annual), and the pace maths respects that.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="5"></span></p>
+      <span class="try"><span class="dot"></span>Hover the rows. Karoo Freight and Delta Fabrication are the two stories worth reading</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">Budget analysis · YTD · Group A</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <div class="tblwrap">
+            <table class="league" id="league">
+              <thead><tr><th>Client</th><th>Budget h</th><th>Logged h</th><th>Used</th><th>Status</th><th>6-mo trend</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="caption">Status legend: On pace &lt;100% · Watch 100 to 110% · Over &gt;110% of pace-adjusted budget. The system tracks hours, not rand; pricing stays in the fee schedule, by design.</div>
+        <div class="veil" id="veil-league" hidden>
+          <div class="box"><div class="lock">🔒</div>
+            <p>Budget variance across clients is a head-level view.</p>
+            <span class="gbtn-wrap"><button class="gbtn" data-role="head">Switch to Priya (head)</button><span class="gbtn-glow"></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 6 - SARS LETTERS -->
+<section class="stop" id="stop-sars">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 6 / 8 · SARS letters</p>
+      <h2>Every SARS letter gets an owner</h2>
+      <p class="body">Letters from SARS, the tax authority, used to land in one inbox and quietly get old.
+        Now a letter is uploaded or pasted straight from the scanner, matched to its client, and
+        <b>routed onto one person's Today list</b>, where it sits owned and dated until it's dealt with.
+        A letter that can't be closed yet gets flagged <b>busy</b> with a reason: waiting on SARS, waiting
+        on the client, or submitted. Busy is an annotation, not a status, so people can show progress
+        without pretending the work is done.</p>
+      <p class="body">The flags age too. A busy item past its follow-up date turns red and floats to the top,
+        and a firm-wide oversight board splits everything pending into <b>busy vs untouched</b>. "It's being
+        handled" stops being something people say in the corridor and becomes something you can check.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="sars"></span></p>
+      <span class="try"><span class="dot"></span>Route the letters in the tray, flag one busy, close one out</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">SARS letters · Today</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <div class="bt" id="sars-strip"></div>
+          <div id="sarslist"></div>
+        </div>
+        <div class="caption">In production: drop or paste the letter, the reference number finds the client, and every routing, busy flag and completion lands in the audit log at Stop 7. Six lifecycle states, with the busy flag riding on top.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 7 - AUDIT -->
+<section class="stop" id="stop6">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 7 / 8 · Audit log</p>
+      <h2>Nothing happens off the record</h2>
+      <p class="body"><b>111 event types</b> flow into an append-only audit log: every entry, approval,
+        query, edit, deletion, merge, letter and role action, all reconstructable after the fact. For an
+        accounting firm, being able to <em>prove</em> control over its time records counts for nearly as much
+        as the records themselves.</p>
+      <p class="body"><b>This one is live.</b> The log below has been recording you since the page loaded:
+        every theme change, role switch, assignment, entry, letter and approval you performed on this tour.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="6"></span></p>
+      <span class="try"><span class="dot"></span>Filter by category and find your own footsteps</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">Audit log · today</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <div class="filters" id="afilters" role="group" aria-label="Filter audit log">
+            <button data-f="all" aria-pressed="true">All</button>
+            <button data-f="access" aria-pressed="false">Access</button>
+            <button data-f="plan" aria-pressed="false">Planning</button>
+            <button data-f="time" aria-pressed="false">Time</button>
+            <button data-f="approval" aria-pressed="false">Approvals</button>
+            <button data-f="sars" aria-pressed="false">Letters</button>
+            <button data-f="arcade" aria-pressed="false">Arcade</button>
+          </div>
+          <div class="audit" id="audit" aria-live="polite"></div>
+        </div>
+        <div class="caption">Append-only: rows are never edited or deleted. The production log records who, what, when, before-value and after-value for every mutation.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STOP 8 - ARCADE -->
+<section class="stop" id="stop7">
+  <div class="wrap stopgrid">
+    <div class="explain">
+      <p class="snum">Stop 8 / 8 · Offline arcade</p>
+      <h2>The bit nobody expected</h2>
+      <p class="body">The app ships as an offline-capable PWA, so when the connection drops, staff get
+        something better than an error page: an arcade, with a firm-wide leaderboard stored right beside
+        the timesheets. It ended up the most talked-about feature in the firm, and yes, this one
+        is playable.</p>
+      <p class="lens"><span class="ll">Through this chair</span><span data-lens="7"></span></p>
+      <span class="try"><span class="dot"></span>Arrow keys / WASD, or the buttons on touch. Beat Thandi's 430</span>
+    </div>
+    <div>
+      <div class="app-frame panel">
+        <div class="chrome"><span class="mini-crest">MV</span><span class="crumb">Offline arcade · Snake</span>
+          <span class="me"><span class="mini" data-me-init>TM</span><span data-me-name>Thandi M.</span></span></div>
+        <div class="app-body">
+          <div class="arcade">
+            <div>
+              <div class="snakebox">
+                <canvas id="snake" width="320" height="224" aria-label="Snake game"></canvas>
+                <div class="snakehud"><span>score <b id="s-score">0</b></span><span>best <b id="s-best">—</b></span></div>
+              </div>
+              <div class="startwrap gbtn-wrap"><button class="gbtn" id="s-start">Start game</button><span class="gbtn-glow"></span></div>
+              <div class="dpad" id="dpad" aria-label="Direction controls">
+                <span class="blank"></span><button data-d="up" aria-label="Up">↑</button><span class="blank"></span>
+                <button data-d="left" aria-label="Left">←</button><button data-d="down" aria-label="Down">↓</button><button data-d="right" aria-label="Right">→</button>
+              </div>
+            </div>
+            <div class="lboard">
+              <div class="bt">Firm leaderboard · all time</div>
+              <div id="lboard"></div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">In production, scores sync to the database when the connection returns, using the same audited, role-aware plumbing as everything else.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUILD -->
+<section class="buildsec" id="build">
+  <div class="wrap">
+    <h2>How the real one is built</h2>
+    <p class="lede">This page is a self-contained replica. The production system behind it is a full-stack
+      application, built and operated solo, live in daily use at an accounting practice since April 2026.</p>
+    <div class="techgrid">
+      <div class="tcard panel"><div class="tt">Next.js 14 + TypeScript</div><div class="td">App Router, server components, one codebase for every role's surface.</div></div>
+      <div class="tcard panel"><div class="tt">Supabase Postgres</div><div class="td">Row-level security enforcing the role model at the database, not just the UI. 104 hand-numbered migrations and counting.</div></div>
+      <div class="tcard panel"><div class="tt">Three themes</div><div class="td">Light, dark and glass: starfield, layered glass panels, one token system.</div></div>
+      <div class="tcard panel"><div class="tt">Append-only auditing</div><div class="td">111 event types; every mutation recorded with before/after values.</div></div>
+      <div class="tcard panel"><div class="tt">Bilingual by design</div><div class="td">Full English and Afrikaans interfaces via next-intl.</div></div>
+      <div class="tcard panel"><div class="tt">Offline-first PWA</div><div class="td">Service-worker caching, offline arcade, background score sync, and a remote kill switch just in case.</div></div>
+      <div class="tcard panel"><div class="tt">Two entities, one codebase</div><div class="td">A satellite practice carved out of every firm-wide surface: same schema, scoped views, one deploy.</div></div>
+      <div class="tcard panel"><div class="tt">Hardened in production</div><div class="td">Sliding-window rate limiting, Sentry-monitored crons, CI type gates, catalog-driven merge and delete guards.</div></div>
+    </div>
+    <div class="factline">
+      <span>live since <b>20 Apr 2026</b></span><span><b>~20</b> daily users</span>
+      <span><b>≈890</b> clients</span><span><b>Vercel</b> · FRA1</span>
+      <span>replacement cost independently estimated at <b>R800k to R1.5M</b></span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="byline">Built by <b>Melton Swarts</b> · <a href="https://github.com/Thrilla99">GitHub</a> · <a href="https://www.linkedin.com/in/melton-swarts-a00a39323/">LinkedIn</a></p>
+    <p>Every firm, person, client and figure on this page is fictional, made up for this demo.
+      The production system and its data stay private. © 2026.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  /* ---------- starfield ---------- */
+  const starCv = $("#stars");
+  function drawStars(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = innerWidth, h = innerHeight;
+    starCv.width = w*dpr; starCv.height = h*dpr;
+    const c = starCv.getContext("2d");
+    c.scale(dpr,dpr); c.clearRect(0,0,w,h);
+    function star(x,y,r,color,coreA,midA){
+      const g = c.createRadialGradient(x,y,0,x,y,r*2.4);
+      g.addColorStop(0, color.replace("A1",coreA));
+      g.addColorStop(.3, color.replace("A1",midA));
+      g.addColorStop(.7, color.replace("A1","0"));
+      c.fillStyle = g;
+      c.beginPath(); c.arc(x,y,r*2.4,0,7); c.fill();
+    }
+    const W = "rgba(255,255,255,A1)", C = "rgba(0,212,255,A1)";
+    for(let i=0;i<66;i++){
+      const x = Math.random()*w, y = Math.random()*h*0.95;
+      const tier = Math.random();
+      if(tier>0.85) star(x,y,1.6,W,"1",".55");
+      else if(tier>0.45) star(x,y,1.1,W,".9",".4");
+      else star(x,y,0.85,W,".7",".3");
+    }
+    star(w*0.82,h*0.12,1.7,C,".95",".5");
+    star(w*0.87,h*0.26,1.7,C,".95",".5");
+  }
+  drawStars();
+  let rsT; addEventListener("resize", ()=>{ clearTimeout(rsT); rsT = setTimeout(drawStars, 200); });
+
+  /* ---------- state ---------- */
+  const personas = {
+    staff:{name:"Thandi M.", init:"TM", full:"Thandi Mokoena"},
+    lead:{name:"Pieter v.R.", init:"PV", full:"Pieter van Rooyen"},
+    head:{name:"Priya N.", init:"PN", full:"Priya Naidoo"}
+  };
+  const lenses = {
+    1:{staff:"Thandi sees her own week, read-only: what's on her plate and how full each day is.",
+       lead:"Pieter plans the whole group here: he drags work onto people's days and watches capacity fill.",
+       head:"Priya sees the aggregate: which groups are saturated and where next week's crunch is forming."},
+    2:{staff:"This is Thandi's daily screen: quarter-hour entries against the clients she worked.",
+       lead:"Pieter logs his own client hours here too; leads are fee earners first.",
+       head:"Priya rarely logs time, but every number she trusts downstream starts on this form."},
+    3:{staff:"Thandi can't see this queue; her entries go in, decisions come out. Try switching chairs.",
+       lead:"This is Pieter's morning: everything his group logged, waiting for his judgement.",
+       head:"Priya watches the queue's health. Her own late entries bypass it by flag, because there is nobody above her to ask."},
+    4:{staff:"Thandi sees her own stats and the leaderboard, not these firm-wide numbers.",
+       lead:"Pieter gets his group's slice of these cards.",
+       head:"This is Priya's Monday view: five definitions she can repeat verbatim, which is the point."},
+    5:{staff:"Not visible to staff; budgets and client variance are management data.",
+       lead:"Pieter sees variance for his own group's clients, to catch runaway jobs early.",
+       head:"Priya reads this like a bank statement: which engagements are mispriced, which work is unpaid."},
+    sars:{staff:"Thandi only sees what's routed to her: a Today list with the clock running on each letter.",
+       lead:"Pieter routes the scanner's morning haul and clears flags that have gone stale.",
+       head:"Priya's board splits pending into busy and untouched, so she can see who is actually stuck."},
+    6:{staff:"Thandi's actions are in here, and that protects her as much as it audits her.",
+       lead:"Every approve and query Pieter makes is on the record, with the reason attached.",
+       head:"For Priya this is the control environment itself: evidence the firm governs its time records."},
+    7:{staff:"Thandi holds the office high score. It's a whole thing.",
+       lead:"Pieter claims he's 'too busy' for the arcade. The leaderboard says otherwise: 180.",
+       head:"Priya signed off on shipping a game. Best adoption decision in the entire rollout."}
+  };
+
+  /* staff colours (mirrors the app's per-staff chip palette) */
+  const CC = {
+    blue:  {c:"#3b82f6", bgL:"rgba(59,130,246,.12)", bgD:"rgba(59,130,246,.30)", bdD:"rgba(59,130,246,.60)", txD:"rgba(147,197,253,.95)"},
+    teal:  {c:"#14b8a6", bgL:"rgba(20,184,166,.12)", bgD:"rgba(20,184,166,.30)", bdD:"rgba(20,184,166,.60)", txD:"rgba(94,234,212,.95)"},
+    amber: {c:"#f59e0b", bgL:"rgba(245,158,11,.14)", bgD:"rgba(245,158,11,.30)", bdD:"rgba(245,158,11,.60)", txD:"rgba(252,211,77,.95)"},
+    indigo:{c:"#6366f1", bgL:"rgba(99,102,241,.12)", bgD:"rgba(99,102,241,.30)", bdD:"rgba(99,102,241,.60)", txD:"rgba(165,180,252,.95)"}
+  };
+  const state = {
+    role:"staff", theme:"dark",
+    hours:1.5, billable:true,
+    entries:[
+      {id:1, owner:"staff", who:"Thandi M.", client:"Karoo Freight (Pty) Ltd", work:"VAT201", hours:3.0, billable:true, status:"approved"},
+      {id:2, owner:"staff", who:"Thandi M.", client:"Umhlanga Dental Studio", work:"Payroll / EMP201", hours:2.5, billable:true, status:"pending"},
+      {id:3, owner:"staff", who:"Thandi M.", client:"Silverleaf Estates", work:"Annual financial statements", hours:5.0, billable:true, status:"queried", reason:"Hours exceed the assignment: confirm scope"},
+      {id:4, owner:"other", who:"Sipho D.", client:"Mzansi Media House", work:"Provisional tax", hours:4.0, billable:true, status:"pending"},
+      {id:5, owner:"other", who:"Anje B.", client:"Cape Wheat Co-op", work:"CIPC annual return", hours:1.0, billable:false, status:"pending"}
+    ],
+    nextId:6,
+    kpi:{hours:612.75, billableH:480.4},
+    days:[
+      {name:"Mon", d:"6", cap:8.5, chips:[{s:"T",cc:"blue",c:"Karoo Freight",w:"VAT201",h:3.0},{s:"S",cc:"teal",c:"Bright & Sons",w:"AFS",h:4.0}]},
+      {name:"Tue", d:"7", cap:8.5, chips:[{s:"T",cc:"blue",c:"Karoo Freight",w:"VAT201",h:3.0},{s:"A",cc:"amber",c:"Umhlanga Dental",w:"Payroll",h:2.5}]},
+      {name:"Wed", d:"8", cap:8.5, chips:[{s:"T",cc:"blue",c:"Silverleaf Estates",w:"AFS",h:5.0}]},
+      {name:"Thu", d:"9", cap:8.5, chips:[{s:"S",cc:"teal",c:"Mzansi Media",w:"Prov. tax",h:4.0},{s:"A",cc:"amber",c:"Two Oceans",w:"Bookkeeping",h:2.0}]},
+      {name:"Fri", d:"10", cap:5.5, chips:[]}
+    ],
+    selDay:4,
+    backlog:[
+      {cc:"teal",c:"Cape Wheat Co-op",w:"CIPC annual return",h:1.5,done:false},
+      {cc:"indigo",c:"Delta Fabrication",w:"Bookkeeping",h:2.0,done:false},
+      {cc:"amber",c:"Umhlanga Dental",w:"Audit preparation",h:3.0,done:false}
+    ],
+    letters:[
+      {id:1, client:"Karoo Freight (Pty) Ltd", kind:"Final demand · VAT", ref:"ref 4915 0182 337", status:"inbox"},
+      {id:2, client:"Umhlanga Dental Studio", kind:"Request for relevant material · ITR14", ref:"ref 2270 6641 095", status:"inbox"},
+      {id:3, client:"Silverleaf Estates", kind:"Notice of assessment · ITA34", ref:"ref 8804 3327 410", status:"routed", to:"Thandi M.", busy:"waiting on SARS · 3d"}
+    ],
+    filter:"all", audit:[],
+    scores:[{n:"Thandi M.",s:430},{n:"Sipho D.",s:380},{n:"Anje B.",s:310},{n:"Priya N.",s:220},{n:"Pieter v.R.",s:180}],
+    yourBest:0
+  };
+
+  const fmtH = n => (Math.round(n*100)/100).toFixed(2).replace(/\.00$/,".0").replace(/(\.\d)0$/,"$1");
+  const clockT = () => new Date().toLocaleTimeString("en-GB",{hour12:false});
+
+  /* ---------- audit ---------- */
+  function pushAudit(cat, type, msg, opts){
+    state.audit.unshift({t:clockT(), cat, type, msg, fresh:!(opts&&opts.seed)});
+    if(state.audit.length>60) state.audit.pop();
+    renderAudit();
+  }
+  function renderAudit(){
+    const box = $("#audit");
+    const rows = state.audit.filter(a => state.filter==="all" || a.cat===state.filter);
+    box.innerHTML = rows.length ? rows.map(a =>
+      `<div class="arow${a.fresh?" fresh":""}"><span class="t">${a.t}</span><span class="k">${a.type}</span><span class="m">${a.msg}</span></div>`
+    ).join("") : `<div class="arow"><span class="m" style="color:#64748B">no events in this category yet. Go do something upstream</span></div>`;
+    state.audit.forEach(a => a.fresh = false);
+  }
+  [["time","TIME.ENTRY_LOGGED","Thandi M. logged 3.0h · Karoo Freight · VAT201"],
+   ["approval","APPROVAL.APPROVED","Pieter v.R. approved entry #1 (Karoo Freight, 3.0h)"],
+   ["approval","APPROVAL.QUERIED","Pieter v.R. queried entry #3: 'Hours exceed the assignment'"],
+   ["plan","PLAN.ASSIGN_CREATED","Pieter v.R. assigned Mzansi Media · Prov. tax · 4.0h → Thu"],
+   ["sars","SARS.LETTER_ROUTED","Pieter v.R. routed 'Notice of assessment · ITA34' (Silverleaf Estates) → Thandi M."],
+   ["sars","SARS.MARKED_BUSY","Thandi M. flagged 'Notice of assessment · ITA34' busy: waiting on SARS"],
+   ["access","ACCESS.EXPORT_RUN","Priya N. ran the budget-analysis export (8 sheets)"]
+  ].forEach(([c,k,m]) => pushAudit(c,k,m,{seed:true}));
+
+  $("#afilters").addEventListener("click", e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    state.filter = b.dataset.f;
+    $$("#afilters button").forEach(x => x.setAttribute("aria-pressed", String(x===b)));
+    renderAudit();
+  });
+
+  /* ---------- theme ---------- */
+  function setTheme(t, opts){
+    if(state.theme===t) return;
+    state.theme = t;
+    document.body.dataset.theme = t;
+    $$("#themeseg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t===t)));
+    if(!(opts&&opts.silent)) pushAudit("access","ACCESS.THEME_SWITCH",`Demo visitor switched theme → ${t}`);
+  }
+  $("#themeseg").addEventListener("click", e=>{
+    const b = e.target.closest("button[data-t]"); if(b) setTheme(b.dataset.t);
+  });
+
+  /* ---------- role ---------- */
+  function setRole(r, opts){
+    if(state.role===r && !(opts&&opts.force)) return;
+    state.role = r;
+    $$("#roleseg button, .persona-row").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.role===r)));
+    const p = personas[r];
+    $$("[data-me-init]").forEach(el => el.textContent = p.init);
+    $$("[data-me-name]").forEach(el => el.textContent = p.name);
+    for(const k in lenses){ const el = document.querySelector(`[data-lens="${k}"]`); if(el) el.textContent = lenses[k][r]; }
+    $("#veil-queue").hidden  = (r==="lead");
+    $("#veil-dash").hidden   = (r==="head");
+    $("#veil-league").hidden = (r==="head");
+    if(!(opts&&opts.silent)) pushAudit("access","ACCESS.ROLE_SWITCH",`Demo visitor now viewing as ${p.full} (${r})`);
+    renderQueue(); renderMyList();
+  }
+  document.addEventListener("click", e=>{
+    const b = e.target.closest("[data-role]");
+    if(b && (b.closest("#roleseg") || b.classList.contains("persona-row") || b.closest(".veil"))) setRole(b.dataset.role);
+  });
+  $("#startTour").addEventListener("click", ()=>{ document.getElementById("stop1").scrollIntoView({behavior:"smooth"}); });
+
+  /* ---------- week planner ---------- */
+  function chipHtml(ch){
+    const p = CC[ch.cc];
+    return `<div class="chipx" style="--cc:${p.c};--cc-bg:${p.bgL};--cc-bg-d:${p.bgD};--cc-bd-d:${p.bdD};--cc-tx-d:${p.txD}">
+      <span class="h">${fmtH(ch.h)}h</span><span class="c">${ch.s} · ${ch.c}</span><span class="w">${ch.w}</span></div>`;
+  }
+  function renderWeek(){
+    $("#week").innerHTML = state.days.map((d,i)=>{
+      const used = d.chips.reduce((s,c)=>s+c.h,0);
+      const pct = Math.min(100, used/d.cap*100);
+      const over = used > d.cap;
+      return `<div class="cal-day${i===state.selDay?" sel":""}" data-day="${i}" role="button" tabindex="0" aria-label="${d.name} ${d.d} July: ${fmtH(used)} of ${d.cap} hours assigned">
+        <div class="dh"><b>${d.name} ${d.d}</b><span class="cap">${d.cap}h</span></div>
+        ${d.chips.map(chipHtml).join("")}
+        <div class="capbar${over?" over":""}"><i style="width:${pct}%"></i></div>
+        <div class="capnote${over?" over":""}">${fmtH(used)} / ${d.cap}h${over?" · over capacity":""}</div>
+      </div>`;
+    }).join("");
+  }
+  $("#week").addEventListener("click", e=>{
+    const d = e.target.closest(".cal-day"); if(!d) return;
+    state.selDay = +d.dataset.day; renderWeek();
+  });
+  $("#week").addEventListener("keydown", e=>{
+    if(e.key!=="Enter" && e.key!==" ") return;
+    const d = e.target.closest(".cal-day"); if(!d) return;
+    e.preventDefault(); state.selDay = +d.dataset.day; renderWeek();
+  });
+  function renderBacklog(){
+    $("#backlog").innerHTML = state.backlog.map((b,i)=>
+      `<div class="bitem${b.done?" done":""}"><span>${b.c} · ${b.w}</span><span class="h">${fmtH(b.h)}h</span>
+       <button data-b="${i}">${b.done?"Assigned ✓":"Assign to selected day →"}</button></div>`).join("");
+  }
+  $("#backlog").addEventListener("click", e=>{
+    const btn = e.target.closest("button[data-b]"); if(!btn) return;
+    const item = state.backlog[+btn.dataset.b];
+    if(item.done) return;
+    item.done = true;
+    const day = state.days[state.selDay];
+    day.chips.push({s:"T", cc:item.cc, c:item.c, w:item.w.length>18?item.w.slice(0,16)+"…":item.w, h:item.h});
+    renderWeek(); renderBacklog();
+    pushAudit("plan","PLAN.ASSIGN_CREATED",`${personas[state.role].name} assigned ${item.c} · ${fmtH(item.h)}h → ${day.name} ${day.d} July`);
+  });
+
+  /* ---------- timesheet ---------- */
+  $("#h-plus").addEventListener("click", ()=>{ state.hours = Math.min(12, state.hours+0.25); $("#h-val").textContent = state.hours.toFixed(2); });
+  $("#h-minus").addEventListener("click", ()=>{ state.hours = Math.max(0.25, state.hours-0.25); $("#h-val").textContent = state.hours.toFixed(2); });
+  $("#f-billable").addEventListener("click", ()=>{
+    state.billable = !state.billable;
+    $("#f-billable").setAttribute("aria-pressed", String(state.billable));
+    $("#billable-word").textContent = state.billable ? "Billable" : "Non-billable";
+  });
+  $("#tform").addEventListener("submit", e=>{
+    e.preventDefault();
+    const entry = {id:state.nextId++, owner:"you", who:"You", client:$("#f-client").value,
+      work:$("#f-work").value, hours:state.hours, billable:state.billable, status:"pending"};
+    state.entries.push(entry);
+    pushAudit("time","TIME.ENTRY_LOGGED",`You logged ${fmtH(entry.hours)}h · ${entry.client} · ${entry.work} (${entry.billable?"billable":"non-billable"})`);
+    renderMyList(); renderQueue(); renderKPIs();
+    const btn = $("#logbtn"); btn.textContent = "Logged ✓ · now in Pieter's queue (Stop 3)";
+    setTimeout(()=>{ btn.textContent = "Log entry → pending approval"; }, 2400);
+  });
+  function renderMyList(){
+    const mine = state.entries.filter(e => e.owner==="staff" || e.owner==="you");
+    $("#mylist").innerHTML = mine.map(e=>{
+      const pill = `<span class="pill ${e.status}">${e.status}</span>`;
+      const nb = e.billable ? "" : `<span class="pill nb">non-bill</span>`;
+      const resub = (e.status==="queried" && state.role==="staff")
+        ? `<button class="resub" data-rs="${e.id}">Fix &amp; resubmit</button>` : "";
+      const reason = e.reason && e.status==="queried" ? `<span class="wt" style="color:var(--rag-lo)">"${e.reason}"</span>` : "";
+      return `<div class="erow"><span class="cl">${e.client}</span><span class="wt">${e.work}</span>${reason}
+        <span class="hh">${fmtH(e.hours)}h</span>${nb}${pill}${resub}</div>`;
+    }).join("");
+  }
+  $("#mylist").addEventListener("click", e=>{
+    const b = e.target.closest("button[data-rs]"); if(!b) return;
+    const entry = state.entries.find(x=>x.id===+b.dataset.rs); if(!entry) return;
+    entry.status = "pending"; delete entry.reason;
+    pushAudit("time","TIME.RESUBMITTED",`${personas.staff.name} resubmitted entry #${entry.id} (${entry.client}, ${fmtH(entry.hours)}h)`);
+    renderMyList(); renderQueue(); renderKPIs();
+  });
+
+  /* ---------- approval queue ---------- */
+  let queryOpen = null;
+  function renderQueue(){
+    const pend = state.entries.filter(e=>e.status==="pending");
+    const q = $("#queue");
+    if(!pend.length){ q.innerHTML = `<div class="qempty">Queue clear. Enjoy it while it lasts.</div>`; return; }
+    q.innerHTML = pend.map(e=>{
+      const openReason = queryOpen===e.id ? `
+        <div class="qreason"><span>Reason:</span>
+          <select id="qr-${e.id}">
+            <option>Hours exceed the assignment: confirm scope</option>
+            <option>Wrong work type: please correct</option>
+            <option>Billable flag looks wrong for this engagement</option>
+            <option>Duplicate of an existing entry</option>
+          </select>
+          <button data-qc="${e.id}">Send query</button></div>` : "";
+      return `<div class="qrow" data-q="${e.id}">
+        <div class="meta"><div class="cl">${e.client} <span class="sub">· ${e.work}</span></div>
+        <div class="sub">${e.who} · ${fmtH(e.hours)}h · ${e.billable?"billable":"non-billable"}</div></div>
+        <span class="stamp" id="stamp-${e.id}">APPROVED</span>
+        <div class="qacts"><button class="ok" data-ap="${e.id}">Approve</button><button class="no" data-qy="${e.id}">Query</button></div>
+        ${openReason}</div>`;
+    }).join("");
+  }
+  $("#queue").addEventListener("click", e=>{
+    const ap = e.target.closest("button[data-ap]");
+    const qy = e.target.closest("button[data-qy]");
+    const qc = e.target.closest("button[data-qc]");
+    if(ap){
+      const entry = state.entries.find(x=>x.id===+ap.dataset.ap);
+      const st = document.getElementById("stamp-"+entry.id);
+      if(st){ st.classList.add("show"); }
+      setTimeout(()=>{
+        entry.status = "approved";
+        state.kpi.hours += entry.hours;
+        if(entry.billable) state.kpi.billableH += entry.hours;
+        pushAudit("approval","APPROVAL.APPROVED",`${personas.lead.name} approved entry #${entry.id} (${entry.client}, ${fmtH(entry.hours)}h)`);
+        renderQueue(); renderMyList(); renderKPIs();
+      }, 620);
+    } else if(qy){
+      queryOpen = queryOpen===+qy.dataset.qy ? null : +qy.dataset.qy;
+      renderQueue();
+    } else if(qc){
+      const entry = state.entries.find(x=>x.id===+qc.dataset.qc);
+      const sel = document.getElementById("qr-"+entry.id);
+      entry.status = "queried"; entry.reason = sel ? sel.value : "Please review";
+      queryOpen = null;
+      pushAudit("approval","APPROVAL.QUERIED",`${personas.lead.name} queried entry #${entry.id}: "${entry.reason}"`);
+      renderQueue(); renderMyList(); renderKPIs();
+    }
+  });
+
+  /* ---------- SARS letters ---------- */
+  let busyOpen = null;
+  function renderLetters(){
+    const L = state.letters;
+    const n = {inbox:0, unt:0, busy:0, done:0};
+    L.forEach(l => { if(l.status==="inbox") n.inbox++; else if(l.status==="done") n.done++; else if(l.busy) n.busy++; else n.unt++; });
+    $("#sars-strip").textContent = `Today · ${n.inbox} in the tray · ${n.unt} untouched · ${n.busy} busy · ${n.done} done`;
+    $("#sarslist").innerHTML = L.map(l=>{
+      const busyChip = l.busy ? `<span class="flag">⏳ ${l.busy}</span>` : "";
+      const pill = l.status==="done" ? `<span class="pill approved">done</span>`
+        : l.status==="inbox" ? `<span class="pill pending">in tray</span>`
+        : `<span class="pill nb">routed → ${l.to}</span>`;
+      const reasonRow = busyOpen===l.id ? `
+        <div class="qreason amber"><span>Waiting on:</span>
+          <select id="br-${l.id}">
+            <option>SARS feedback</option>
+            <option>the client</option>
+            <option>the outcome of a submission</option>
+          </select>
+          <button data-bc="${l.id}">Flag busy</button></div>` : "";
+      const acts = l.status==="inbox"
+        ? `<div class="qacts"><button class="ok" data-rt="${l.id}">Route → Thandi</button></div>`
+        : l.status==="routed"
+        ? `<div class="qacts">${l.busy?"":`<button class="wait" data-by="${l.id}">Busy…</button>`}<button class="ok" data-dn="${l.id}">Done</button></div>`
+        : "";
+      return `<div class="qrow">
+        <div class="meta"><div class="cl">${l.client} <span class="sub">· ${l.kind}</span></div>
+        <div class="sub">${l.ref}</div></div>${busyChip}${pill}${acts}${reasonRow}</div>`;
+    }).join("");
+  }
+  $("#sarslist").addEventListener("click", e=>{
+    const rt = e.target.closest("button[data-rt]"), by = e.target.closest("button[data-by]"),
+          bc = e.target.closest("button[data-bc]"), dn = e.target.closest("button[data-dn]");
+    if(rt){
+      const l = state.letters.find(x=>x.id===+rt.dataset.rt);
+      l.status = "routed"; l.to = "Thandi M.";
+      pushAudit("sars","SARS.LETTER_ROUTED",`${personas[state.role].name} routed "${l.kind}" (${l.client}) → Thandi M.`);
+    } else if(by){
+      busyOpen = busyOpen===+by.dataset.by ? null : +by.dataset.by;
+    } else if(bc){
+      const l = state.letters.find(x=>x.id===+bc.dataset.bc);
+      const sel = document.getElementById("br-"+l.id);
+      const why = sel ? sel.value : "SARS feedback";
+      l.busy = `waiting on ${why} · today`; busyOpen = null;
+      pushAudit("sars","SARS.MARKED_BUSY",`Thandi M. flagged "${l.kind}" busy: ${why}`);
+    } else if(dn){
+      const l = state.letters.find(x=>x.id===+dn.dataset.dn);
+      l.status = "done"; l.busy = null; busyOpen = null;
+      pushAudit("sars","SARS.COMPLETED",`Thandi M. completed "${l.kind}" (${l.client})`);
+    } else { return; }
+    renderLetters();
+  });
+
+  /* ---------- KPIs + gauge ---------- */
+  const ARC = 125.66;
+  function renderKPIs(){
+    const pend = state.entries.filter(e=>e.status==="pending" || e.status==="queried").length;
+    $("#k-pending").textContent = pend;
+    $("#k-pending-sub").textContent = pend===0 ? "queue clear ✓" : "oldest: 3 days";
+    $("#k-pending-sub").className = pend===0 ? "ks good" : "ks warn";
+    $("#k-hours").textContent = state.kpi.hours.toLocaleString("en-ZA",{minimumFractionDigits:2, maximumFractionDigits:2});
+    const pct = state.kpi.billableH/state.kpi.hours*100;
+    const fill = $("#gauge-fill"), val = $("#gauge-val");
+    val.textContent = pct.toFixed(1)+"%";
+    fill.setAttribute("stroke-dashoffset", (ARC*(1-Math.min(100,pct)/100)).toFixed(1));
+    const col = pct>=75 ? "var(--rag-hi)" : pct>=50 ? "var(--rag-mid)" : "var(--rag-lo)";
+    fill.setAttribute("stroke", col); fill.style.color = col; val.style.color = col;
+  }
+
+  /* ---------- league ---------- */
+  const league = [
+    {c:"Karoo Freight (Pty) Ltd", b:120, l:148, trend:[18,22,25,24,28,31], flag:"fee"},
+    {c:"Cape Wheat Co-op", b:36, l:44, trend:[5,6,7,8,9,9]},
+    {c:"Umhlanga Dental Studio", b:60, l:66, trend:[9,10,11,12,11,13]},
+    {c:"Silverleaf Estates", b:90, l:96, trend:[14,15,16,17,17,17]},
+    {c:"Mzansi Media House", b:140, l:138, trend:[24,23,22,23,24,22]},
+    {c:"Bright & Sons Hardware", b:75, l:61, trend:[12,11,10,10,9,9]},
+    {c:"Two Oceans Catering CC", b:48, l:31, trend:[6,5,5,6,5,4]},
+    {c:"Delta Fabrication (Pty) Ltd", b:0, l:12.5, trend:[0,0,1,3,4,4.5], flag:"nobudget"}
+  ];
+  function spark(vals){
+    const w=92, h=26, max=Math.max(...vals,1), min=Math.min(...vals);
+    const pts = vals.map((v,i)=>[(i/(vals.length-1))*(w-6)+3, h-4-((v-min)/(max-min||1))*(h-9)]);
+    const line = pts.map(p=>p.map(n=>n.toFixed(1)).join(",")).join(" ");
+    const area = `3,${h-2} ${line} ${w-3},${h-2}`;
+    const last = pts[pts.length-1];
+    return `<svg width="${w}" height="${h}" role="img" aria-label="Six-month trend">
+      <polygon points="${area}" fill="rgba(0,180,255,.10)"/>
+      <polyline points="${line}" fill="none" stroke="var(--spark)" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.6" fill="var(--spark-dot)"/></svg>`;
+  }
+  function renderLeague(){
+    $("#league tbody").innerHTML = league.map(r=>{
+      let used, status, cls;
+      if(r.b===0){ used="—"; status="No budget set"; cls="queried"; }
+      else{
+        const pct = r.l/r.b*100;
+        used = pct.toFixed(0)+"%";
+        if(pct>110){status="Over"; cls="queried";}
+        else if(pct>=100){status="Watch"; cls="pending";}
+        else{status="On pace"; cls="approved";}
+      }
+      const flag = r.flag==="fee" ? `<span class="flag">⚑ fee-adjustment candidate</span>`
+        : r.flag==="nobudget" ? `<span class="flag nb">unbudgeted work</span>` : "";
+      return `<tr><td class="cl">${r.c}${flag}</td><td class="num">${r.b===0?"—":r.b.toFixed(1)}</td>
+        <td class="num">${r.l.toFixed(1)}</td><td class="num">${used}</td>
+        <td><span class="pill ${cls}">${status}</span></td><td>${spark(r.trend)}</td></tr>`;
+    }).join("");
+  }
+
+  /* ---------- leaderboard ---------- */
+  function renderScores(){
+    const rows = state.scores.slice().sort((a,b)=>b.s-a.s).slice(0,6);
+    $("#lboard").innerHTML = rows.map((r,i)=>
+      `<div class="lrow${r.you?" you":""}"><span class="rank">${i+1}</span><span>${r.n}</span><span class="score">${r.s}</span></div>`
+    ).join("");
+  }
+
+  /* ---------- snake ---------- */
+  const cv = $("#snake"), ctx = cv.getContext("2d");
+  const CELL=16, COLS=20, ROWS=14;
+  let snake, dir, nextDir, food, score, timer=null, running=false;
+  function drawCell(x,y,color,r){
+    ctx.fillStyle=color;
+    const px=x*CELL, py=y*CELL;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(px+1,py+1,CELL-2,CELL-2,r||3); else ctx.rect(px+1,py+1,CELL-2,CELL-2);
+    ctx.fill();
+  }
+  function drawBoard(){
+    ctx.fillStyle="#050e1c"; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle="rgba(0,212,255,.05)";
+    for(let i=1;i<COLS;i++){ ctx.beginPath(); ctx.moveTo(i*CELL,0); ctx.lineTo(i*CELL,cv.height); ctx.stroke(); }
+    for(let i=1;i<ROWS;i++){ ctx.beginPath(); ctx.moveTo(0,i*CELL); ctx.lineTo(cv.width,i*CELL); ctx.stroke(); }
+    if(food) drawCell(food.x,food.y,"#F87171",7);
+    if(snake) snake.forEach((s,i)=> drawCell(s.x,s.y, i===0?"#00D4FF":"#2E75B6"));
+  }
+  function placeFood(){
+    do{ food={x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)}; }
+    while(snake.some(s=>s.x===food.x&&s.y===food.y));
+  }
+  function startGame(){
+    snake=[{x:9,y:7},{x:8,y:7},{x:7,y:7}]; dir={x:1,y:0}; nextDir=dir; score=0; running=true;
+    $("#s-score").textContent="0"; $("#s-start").textContent="Restart";
+    placeFood();
+    if(timer) clearInterval(timer);
+    timer=setInterval(tick,115);
+    drawBoard();
+  }
+  function endGame(){
+    running=false; clearInterval(timer); timer=null;
+    ctx.fillStyle="rgba(5,14,28,.75)"; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle="#E5E9F0"; ctx.font="600 15px Consolas,monospace"; ctx.textAlign="center";
+    ctx.fillText("GAME OVER · "+score, cv.width/2, cv.height/2-4);
+    ctx.font="12px Consolas,monospace"; ctx.fillStyle="#64748B";
+    ctx.fillText("press Start to go again", cv.width/2, cv.height/2+16);
+    if(score>0){
+      if(score>state.yourBest){
+        state.yourBest=score;
+        $("#s-best").textContent=score;
+        const you = state.scores.find(r=>r.you);
+        if(you) you.s=score; else state.scores.push({n:"You (demo visitor)", s:score, you:true});
+        renderScores();
+      }
+      pushAudit("arcade","ARCADE.SCORE_LOGGED",`Demo visitor scored ${score} at Snake${score>430?", a new firm record":""}`);
+    }
+  }
+  function tick(){
+    dir=nextDir;
+    const head={x:snake[0].x+dir.x, y:snake[0].y+dir.y};
+    if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)){ endGame(); return; }
+    snake.unshift(head);
+    if(head.x===food.x&&head.y===food.y){ score+=10; $("#s-score").textContent=score; placeFood(); }
+    else snake.pop();
+    drawBoard();
+  }
+  function setDir(d){
+    const m={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}[d];
+    if(!m||!running) return;
+    if(m.x===-dir.x&&m.y===-dir.y) return;
+    nextDir=m;
+  }
+  $("#s-start").addEventListener("click", startGame);
+  $("#dpad").addEventListener("click", e=>{
+    const b=e.target.closest("button[data-d]"); if(b) setDir(b.dataset.d);
+  });
+  document.addEventListener("keydown", e=>{
+    if(!running) return;
+    const map={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",w:"up",s:"down",a:"left",d:"right",W:"up",S:"down",A:"left",D:"right"};
+    if(map[e.key]){ e.preventDefault(); setDir(map[e.key]); }
+  });
+  drawBoard();
+  ctx.fillStyle="#64748B"; ctx.font="12px Consolas,monospace"; ctx.textAlign="center";
+  ctx.fillText("press Start", cv.width/2, cv.height/2);
+
+  /* ---------- boot ---------- */
+  document.body.dataset.theme = "dark";
+  renderWeek(); renderBacklog(); renderMyList(); renderQueue(); renderKPIs(); renderLeague(); renderScores(); renderLetters();
+  setRole("staff", {silent:true, force:true});
+})();
+</script>
+</body>
+</html>
